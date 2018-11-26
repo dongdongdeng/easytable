@@ -4,6 +4,7 @@ import org.junit.Test;
 import org.vandeseer.TestUtils;
 import org.vandeseer.easytable.structure.Row;
 import org.vandeseer.easytable.structure.Table;
+import org.vandeseer.easytable.structure.cell.CellCustom;
 import org.vandeseer.easytable.structure.cell.CellText;
 
 import java.awt.*;
@@ -21,9 +22,17 @@ public class CellSpanningTest {
                 .fontSize(8)
                 .font(HELVETICA);
 
-
         tableBuilder.addRow(Row.builder()
-                .add(CellText.builder().text("Pur").span(2).backgroundColor(Color.YELLOW).horizontalAlignment(CENTER).borderWidth(1).build())
+                .add(CellCustom.builder().heightSupplier(() -> 35f).onDrawConsumer(context -> {
+                    
+                    try {
+                        context.contentStream.moveTo(context.x, context.y);
+                        context.contentStream.drawLine(context.x, context.y, context.x + 10, context.y + 10);
+                    } catch (Exception exc) {
+                        exc.printStackTrace();
+                    }
+
+                }).span(2).build())
                 .add(CellText.builder().text("Booz").build())
                 .backgroundColor(Color.BLUE)
                 .build());
