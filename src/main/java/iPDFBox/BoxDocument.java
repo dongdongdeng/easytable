@@ -62,6 +62,72 @@ public class BoxDocument {
         }
         return font;
     }
+    
+    /**
+     * 增加一段文本
+     * @param contentStream
+     * @param width
+     * @param sx
+     * @param sy
+     * @param text
+     * @param justify
+     * @throws IOException
+     */
+    private static int addParagraph(PDPageContentStream contentStream, float width, float sx,
+                                     float sy, String text, boolean justify, PDFont font, int fontSize) throws IOException {
+        List<String> lines = new ArrayList<>();
+        parseLinesRecursive(text, width, lines, font, fontSize);
+
+        contentStream.setFont(font, fontSize);
+        contentStream.newLineAtOffset(sx, sy);
+        for (String line: lines) {
+            float charSpacing = 0;
+            if (justify){
+                if (line.length() > 1) {
+                    float size = fontSize * font.getStringWidth(line) / 1000;
+                    float free = width - size;
+                    if (free > 0 && !lines.get(lines.size() - 1).equals(line)) {
+                        charSpacing = free / (line.length() - 1);
+                    }
+                }
+            }
+            contentStream.setCharacterSpacing(charSpacing);
+            contentStream.showText(line);
+            contentStream.newLineAtOffset(0, -1.5f * fontSize);
+        }
+        return lines.size();
+    }
+
+    /**
+     * 递归分析文本，并按宽度分割成N行
+     * @param text
+     * @param width
+     * @param lines
+     * @return
+     * @throws IOException
+     */
+    private static List<String> parseLinesRecursive(String text, float width, List<String> lines, PDFont font, int fontSize) throws IOException {
+        String tmpText = text;
+        for (int i=0; i<text.length(); i++) {
+            tmpText = text.substring(0, text.length() - i);
+
+            float realWidth = fontSize * font.getStringWidth(tmpText) / 1000;
+
+            if (realWidth > width) {
+                continue;
+            } else {
+                lines.add(tmpText);
+
+                if (0 != i) {
+                    parseLinesRecursive(text.substring(text.length() - i), width, lines, font, fontSize);
+                }
+
+                break;
+            }
+        }
+
+        return lines;
+    }
 
     public void save(String outputFileName) {
     try {
@@ -75,11 +141,11 @@ public class BoxDocument {
             for (int i=0; i<mObjectList.size(); i++) {
                 if (mObjectList.get(i) instanceof BoxTable) {
                     Table table = ((BoxTable)mObjectList.get(i)).getTableBuilder().build();
-
+                    
                     TableDrawer.builder()
                             .contentStream(contentStream)
                             .table(table)
-                            .startX(DOCUMENT_PADDING)
+                            .startX((page.getMediaBox().getWidth() - table.getWidth()) / 2)
                             .startY(lastY)
                             .build()
                             .draw();
@@ -117,20 +183,40 @@ public class BoxDocument {
             		                	
                 } else {
                     // text
-                    contentStream.setFont(this.mDefaultFont, DEFAULT_FONT_SIZE);
-                    //Begin the Content stream
-                    contentStream.beginText();
-
-                    //Setting the position for the line
-                    contentStream.newLineAtOffset(DOCUMENT_PADDING, lastY);
-
-                    //Adding text in the form of string
-                    contentStream.showText((String) mObjectList.get(i));
-
-                    //Ending the content stream
-                    contentStream.endText();
-
-                    lastY = lastY - 1.5f * this.DEFAULT_FONT_SIZE;
+                	String text = (String) mObjectList.get(i);
+                	
+                	float textWidth = PdfUtil.getStringWidth(text, this.mDefaultFont, DEFAULT_FONT_SIZE);
+                	
+                	float pageWidth = page.getMediaBox().getWidth();
+	
+                	// 宽度不够，需要换行
+                	if (textWidth + DOCUMENT_PADDING * 2 > pageWidth) {
+                		contentStream.beginText();
+                		
+                		int line = addParagraph(contentStream, pageWidth - DOCUMENT_PADDING * 2, 
+                				DOCUMENT_PADDING, lastY, text, true,
+                				this.mDefaultFont, DEFAULT_FONT_SIZE);
+                		
+                		contentStream.endText();
+                		
+                		lastY = lastY - 1.5f * this.DEFAULT_FONT_SIZE * line;
+                	} else {
+                	
+	                    contentStream.setFont(this.mDefaultFont, DEFAULT_FONT_SIZE);
+	                    //Begin the Content stream
+	                    contentStream.beginText();
+	
+	                    //Setting the position for the line
+	                    contentStream.newLineAtOffset(DOCUMENT_PADDING, lastY);
+	
+	                    //Adding text in the form of string
+	                    contentStream.showText(text);
+	
+	                    //Ending the content stream
+	                    contentStream.endText();
+	
+	                    lastY = lastY - 1.5f * this.DEFAULT_FONT_SIZE;
+                	}
                 }
             }
         }
