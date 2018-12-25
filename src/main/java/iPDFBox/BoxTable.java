@@ -32,17 +32,16 @@ public class BoxTable {
     private Table.TableBuilder mTable;
 
     private int mNumColumns = 0;
+    
+    private PDFont mDefaultFont = null;
 
     private List<BoxCell> mCellList = new ArrayList<>();
 
-    private static PDFont loadFont(String location) {
+    private static PDFont loadFont(String fontFileLocation) {
         PDFont font;
         try {
             PDDocument documentMock = new PDDocument();
-            //InputStream systemResourceAsStream = ClassLoader.getSystemResourceAsStream(location);
-            //Encoding encoding = Encoding.getInstance(COSName.WIN_ANSI_ENCODING);
-            font = PDType0Font.load(documentMock, new File(location));
-            //font = PDTrueTypeFont.load(documentMock, systemResourceAsStream, encoding);
+            font = PDType0Font.load(documentMock, new File(fontFileLocation));
         }
         catch (IOException e) {
             throw new RuntimeException("IO exception");
@@ -50,9 +49,11 @@ public class BoxTable {
         return font;
     }
 
-    public BoxTable(int numColumns) {
-        PDFont pdFont = loadFont("D:\\simfang.ttf");
+    public BoxTable(int numColumns, PDFont pdFont) {
+        
         mNumColumns = numColumns;
+        
+        mDefaultFont = pdFont;
 
         mTable = Table.builder();
 
@@ -60,7 +61,7 @@ public class BoxTable {
             mTable.addColumnOfWidth(70);
         }
 
-        mTable.fontSize(8).font(pdFont).borderColor(Color.LIGHT_GRAY);
+        mTable.fontSize(8).font(mDefaultFont).borderColor(Color.LIGHT_GRAY);
 
     }
 
@@ -96,10 +97,10 @@ public class BoxTable {
                     }
 
                 }
-                PDFont pdFont = loadFont("D:\\simfang.ttf");
+                
                 Row row = rowBuilder.backgroundColor(Color.WHITE)
                         .textColor(Color.BLACK)
-                        .font(pdFont).fontSize(9)
+                        .font(mDefaultFont).fontSize(9)
                         .horizontalAlignment(CENTER)
                         .build();
 
