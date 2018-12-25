@@ -96,7 +96,9 @@ public class BoxDocument {
                 	float startX = DOCUMENT_PADDING;
                 	if (paragraph.getAlign().equals(HorizontalAlignment.CENTER)) {
                 		startX = (pageWidth-textWidth) / 2;
-                	} 
+                	} else if (paragraph.getAlign().equals(HorizontalAlignment.RIGHT)) {
+                		startX = pageWidth - textWidth - DOCUMENT_PADDING; 
+                	}
                 	
                 	contentStream.setFont(paragraph.getFont(), paragraph.getFontSize());
                     //Begin the Content stream
