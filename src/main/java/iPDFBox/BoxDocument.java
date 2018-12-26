@@ -11,6 +11,7 @@ import org.vandeseer.easytable.settings.HorizontalAlignment;
 import org.vandeseer.easytable.structure.Table;
 import org.vandeseer.easytable.util.PdfUtil;
 
+import java.awt.Color;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -140,7 +141,10 @@ public class BoxDocument {
 
             for (int i=0; i<mObjectList.size(); i++) {
                 if (mObjectList.get(i) instanceof BoxTable) {
-                    Table table = ((BoxTable)mObjectList.get(i)).getTableBuilder().build();
+                	BoxTable boxTable = (BoxTable)mObjectList.get(i); 
+                    Table table = boxTable.getTableBuilder().build();
+                    
+                    lastY = lastY - boxTable.getTopPadding();
                     
                     TableDrawer.builder()
                             .contentStream(contentStream)
@@ -148,9 +152,9 @@ public class BoxDocument {
                             .startX((page.getMediaBox().getWidth() - table.getWidth()) / 2)
                             .startY(lastY)
                             .build()
-                            .draw();
-
-                    lastY = lastY - table.getHeight()- 20;
+                            .draw(Color.LIGHT_GRAY, 1, 1, 0, 1);
+                           
+                    lastY = lastY - table.getHeight()- boxTable.getBottomPadding();
 
                 } else if (mObjectList.get(i) instanceof BoxParagraph) {
                 	BoxParagraph paragraph = (BoxParagraph)mObjectList.get(i);
@@ -205,6 +209,8 @@ public class BoxDocument {
 	                    contentStream.setFont(this.mDefaultFont, DEFAULT_FONT_SIZE);
 	                    //Begin the Content stream
 	                    contentStream.beginText();
+	                    
+	                    contentStream.setNonStrokingColor(Color.BLUE);
 	
 	                    //Setting the position for the line
 	                    contentStream.newLineAtOffset(DOCUMENT_PADDING, lastY);

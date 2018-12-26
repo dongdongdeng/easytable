@@ -7,6 +7,7 @@ import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.vandeseer.easytable.TableDrawer;
 import org.vandeseer.easytable.structure.Table;
 
+import java.awt.Color;
 import java.io.IOException;
 
 public class TestUtils {
@@ -31,7 +32,7 @@ public class TestUtils {
                     .startX(DOCUMENT_PADDING)
                     .startY(page.getMediaBox().getHeight() - DOCUMENT_PADDING)
                     .build()
-                    .draw();
+                    .draw(Color.LIGHT_GRAY, 0, 0, 0, 0);
 
         }
 

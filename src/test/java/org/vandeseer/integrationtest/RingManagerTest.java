@@ -29,7 +29,7 @@ public class RingManagerTest {
         final PDPageContentStream contentStream = new PDPageContentStream(document, page);
         final Table table = getRingManagerTable();
 
-        TableDrawer.builder().contentStream(contentStream).table(table).startX(startX).startY(startY).build().draw();
+        TableDrawer.builder().contentStream(contentStream).table(table).startX(startX).startY(startY).build().draw(Color.LIGHT_GRAY, 0, 0, 0, 0);
 
         contentStream.setFont(HELVETICA, 8.0f);
         contentStream.beginText();

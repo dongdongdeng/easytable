@@ -12,8 +12,11 @@ import org.vandeseer.easytable.structure.Row;
 import org.vandeseer.easytable.structure.Table;
 import org.vandeseer.easytable.structure.cell.CellBaseData;
 import org.vandeseer.easytable.structure.cell.CellImage;
+import org.vandeseer.easytable.structure.cell.CellParagraph;
 import org.vandeseer.easytable.structure.cell.CellText;
 import org.vandeseer.easytable.util.PdfUtil;
+
+import iPDFBox.BoxParagraph;
 
 import java.awt.*;
 import java.awt.geom.Point2D;
@@ -57,11 +60,41 @@ public class TableDrawer {
         this.endY = endY;
     }
 
-    public void draw() throws IOException {
+    public void draw(Color tableBorderColor, int borderWidthTop, int borderWidthRight, int borderWidthBottom, int borderWidthLeft) throws IOException {
         drawBackgroundAndCellContent(this.startX, this.startY);
         drawBorders(this.startX, this.startY);
+        
+        drawTableBorder(tableBorderColor, borderWidthTop, borderWidthRight, borderWidthBottom, borderWidthLeft);
     }
 
+    private void drawTableBorder(Color tableBorderColor, int borderWidthTop, int borderWidthRight, int borderWidthBottom, int borderWidthLeft) throws IOException {
+    	
+    	if (borderWidthTop > 0) {
+	    	contentStream.moveTo(startX, startY);
+	        drawLine(tableBorderColor, borderWidthTop, startX + table.getWidth(), startY);
+	        contentStream.setStrokingColor(tableBorderColor);
+    	}
+    	
+    	if (borderWidthRight > 0) {
+	    	contentStream.moveTo(startX + table.getWidth(), startY);
+	        drawLine(tableBorderColor, borderWidthTop, startX + table.getWidth(), startY - table.getHeight());
+	        contentStream.setStrokingColor(tableBorderColor);
+    	}
+    	
+    	if (borderWidthBottom > 0) {
+	    	contentStream.moveTo(startX, startY + table.getHeight());
+	        drawLine(tableBorderColor, borderWidthTop, startX + table.getWidth(), startY - table.getHeight());
+	        contentStream.setStrokingColor(tableBorderColor);
+    	}
+    	
+    	if (borderWidthLeft > 0) {
+	    	contentStream.moveTo(startX, startY);
+	        drawLine(tableBorderColor, borderWidthTop, startX, startY - table.getHeight());
+	        contentStream.setStrokingColor(tableBorderColor);
+    	}
+    	
+    }
+    
     private void drawBackgroundAndCellContent(float initialX, float initialY) throws IOException {
         float startX;
         float startY = initialY;
@@ -91,6 +124,9 @@ public class TableDrawer {
                     drawCellText((CellText) cell, cellWidth, startX, startY);
                 } else if (cell instanceof CellImage) {
                     drawCellImage((CellImage) cell, cellWidth, startX, startY);
+                } else if (cell instanceof CellParagraph) {
+                	CellParagraph paragraph = (CellParagraph) cell;
+                	drawCellParagraph(paragraph, cellWidth, startX, startY);
                 }
 
                 startX += cellWidth;
@@ -172,7 +208,7 @@ public class TableDrawer {
         final Color currentTextColor = cell.getTextColor();
 
         final List<String> lines;
-
+        
         float maxWidth = cell.getWidthOfTextAndHorizontalPadding() - (cell.getPaddingLeft() + cell.getPaddingRight());
         if (table.isWordBreak()) {
             lines = PdfUtil.getOptimalTextBreakLines(cell.getText(), currentFont, currentFontSize, maxWidth);
@@ -212,8 +248,75 @@ public class TableDrawer {
 
             }
 
-            drawText(line, currentFont, currentFontSize, currentTextColor, xOffset, yOffset);
+            drawText(line, currentFont, currentFontSize, currentTextColor, xOffset, yOffset); 
+        }  
+    }
+    
+    private void drawCellParagraph(final CellParagraph cell, final float columnWidth, final float moveX, final float moveY) throws IOException {
+        final PDFont currentFont = cell.getParagraph().getFont();
+        final int currentFontSize = cell.getParagraph().getFontSize();
+        final Color currentTextColor = cell.getParagraph().getColor();
+
+        final List<String> lines;
+
+        float[] rv = new float[2];
+        
+        float maxWidth = cell.getWidthOfTextAndHorizontalPadding() - (cell.getPaddingLeft() + cell.getPaddingRight());
+        if (table.isWordBreak()) {
+            lines = PdfUtil.getOptimalTextBreakLines(cell.getText(), currentFont, currentFontSize, maxWidth);
+        } else {
+            lines = Collections.singletonList(cell.getText());
         }
+
+        // Vertical alignment
+        float yStartRelative = cell.getRow().getHeight() - cell.getPaddingTop(); // top position
+        if (cell.getRow().getHeight() > cell.getHeight()) {
+            if (cell.getSettings().getVerticalAlignment() == VerticalAlignment.MIDDLE) {
+                yStartRelative = cell.getRow().getHeight() / 2 + (cell.getHeight() - cell.getPaddingBottom() - cell.getPaddingTop()) / 2;
+            } else if (cell.getSettings().getVerticalAlignment() == VerticalAlignment.BOTTOM) {
+                yStartRelative = cell.getHeight() - cell.getPaddingTop();
+            }
+        }
+
+        float yOffset = moveY + yStartRelative;
+        for (int i = 0; i < lines.size(); i++) {
+            final String line = lines.get(i);
+
+            float xOffset = moveX + cell.getPaddingLeft();
+            yOffset -= (
+                    PdfUtil.getFontHeight(currentFont, currentFontSize) // font height
+                            + (i > 0 ? PdfUtil.getFontHeight(currentFont, currentFontSize) * cell.getLineSpacing() : 0f) // line spacing
+            );
+
+            final float textWidth = PdfUtil.getStringWidth(line, currentFont, currentFontSize);
+        
+            float textWidthWithAllParagraph = textWidth;
+            if (cell.getParagraph().getParagraphList().size() > 0) {
+            	textWidthWithAllParagraph = PdfUtil.getStringWidth(line + cell.getParagraph().getParagraphList().get(0).getText(), currentFont, currentFontSize);
+            }
+            // Handle horizontal alignment by adjusting the xOffset
+            if (cell.getSettings().getHorizontalAlignment() == HorizontalAlignment.RIGHT) {
+                xOffset = moveX + (columnWidth - (textWidthWithAllParagraph + cell.getPaddingRight()));
+
+            } else if (cell.getSettings().getHorizontalAlignment() == HorizontalAlignment.CENTER) {
+                final float diff = (columnWidth - textWidth) / 2;
+                xOffset = moveX + diff;
+
+            }
+
+            drawText(line, currentFont, currentFontSize, currentTextColor, xOffset, yOffset);
+            
+            rv[0] = xOffset + textWidth;
+            rv[1] = yOffset;
+        }
+        
+    	if (cell.getParagraph().getParagraphList().size() > 0) {
+        	BoxParagraph boxParagraph = cell.getParagraph().getParagraphList().get(0);
+            PDFont tCurrentFont = boxParagraph.getFont();
+            int tCurrentFontSize = boxParagraph.getFontSize();
+            Color tCurrentTextColor = boxParagraph.getColor();
+            drawText(boxParagraph.getText(), tCurrentFont, tCurrentFontSize, tCurrentTextColor, rv[0], rv[1]);
+    	}
     }
 
     private void drawCellImage(final CellImage cell, final float columnWidth, final float moveX, final float moveY) throws IOException {
@@ -260,5 +363,5 @@ public class TableDrawer {
         contentStream.showText(text);
         contentStream.endText();
     }
-
+    
 }

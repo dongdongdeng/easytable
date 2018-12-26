@@ -60,7 +60,7 @@ public class TwoPagesTableTest {
             PDPage page = new PDPage(PDRectangle.A4);
             document.addPage(page);
             try (PDPageContentStream contentStream = new PDPageContentStream(document, page)) {
-                drawer.contentStream(contentStream).draw();
+                drawer.contentStream(contentStream).draw(Color.LIGHT_GRAY, 0, 0, 0, 0);
             }
 
             drawer.startY(page.getMediaBox().getHeight() - 50);

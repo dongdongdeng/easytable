@@ -13,6 +13,7 @@ import org.apache.pdfbox.pdmodel.font.encoding.Encoding;
 import org.vandeseer.easytable.TableDrawer;
 import org.vandeseer.easytable.structure.Row;
 import org.vandeseer.easytable.structure.Table;
+import org.vandeseer.easytable.structure.cell.CellParagraph;
 import org.vandeseer.easytable.structure.cell.CellText;
 
 import java.awt.*;
@@ -26,11 +27,16 @@ import java.util.Optional;
 import static org.apache.pdfbox.pdmodel.font.PDType1Font.HELVETICA;
 import static org.vandeseer.easytable.settings.HorizontalAlignment.CENTER;
 import static org.vandeseer.easytable.settings.HorizontalAlignment.LEFT;
+import static org.vandeseer.easytable.settings.HorizontalAlignment.RIGHT;
 
 public class BoxTable {
 
     private Table.TableBuilder mTable;
 
+    private float mTopPadding = 10;
+    
+    private float mBottomPadding = 20;
+    
     private int mNumColumns = 0;
     
     private PDFont mDefaultFont = null;
@@ -58,11 +64,30 @@ public class BoxTable {
         mTable = Table.builder();
 
         for(int i=0; i<mNumColumns; i++) {
-            mTable.addColumnOfWidth(70);
+            mTable.addColumnOfWidth(150);
         }
 
         mTable.fontSize(8).font(mDefaultFont).borderColor(Color.LIGHT_GRAY);
 
+    }
+
+    public BoxTable(int numColumns, PDFont pdFont, float topPadding, float bottomPadding) {
+        
+    	mNumColumns = numColumns;
+        
+        mDefaultFont = pdFont;
+        
+        mTopPadding = topPadding;
+        
+        mBottomPadding = bottomPadding;
+
+        mTable = Table.builder();
+
+        for(int i=0; i<mNumColumns; i++) {
+            mTable.addColumnOfWidth(150);
+        }
+
+        mTable.fontSize(8).font(mDefaultFont).borderColor(Color.LIGHT_GRAY);    	
     }
 
     public void addCell(String text) {
@@ -70,6 +95,11 @@ public class BoxTable {
         mCellList.add(boxCell);
     }
 
+    public void addCell(BoxParagraph boxParagraph) {
+        BoxCell boxCell = new BoxCell(boxParagraph);
+        mCellList.add(boxCell);
+    }
+    
     public void addCell(BoxCell boxCell) {
         if (1 == boxCell.getColspan()) {
             mCellList.add(boxCell);
@@ -93,7 +123,12 @@ public class BoxTable {
                     if (mCellList.get(i-j).getText().equals("_@_")) {
                         // 空白（被前面占位）
                     } else {
-                        rowBuilder.add(CellText.builder().text(mCellList.get(i - j).getText()).span(mCellList.get(i - j).getColspan()).borderWidth(1).build());
+                    	BoxCell cell = mCellList.get(i - j);
+                    	if (null != cell.getParagraph()) {
+                    		rowBuilder.add(CellParagraph.builder().paragraph(cell.getParagraph()).span(cell.getColspan()).borderWidthBottom(1).horizontalAlignment(cell.getHorizontalAlignment()).build());
+                    	} else {
+                    		rowBuilder.add(CellText.builder().text(mCellList.get(i - j).getText()).span(mCellList.get(i - j).getColspan()).borderWidthBottom(1).build());
+                    	}
                     }
 
                 }
@@ -101,7 +136,7 @@ public class BoxTable {
                 Row row = rowBuilder.backgroundColor(Color.WHITE)
                         .textColor(Color.BLACK)
                         .font(mDefaultFont).fontSize(9)
-                        .horizontalAlignment(CENTER)
+                        .horizontalAlignment(LEFT)
                         .build();
 
                 mTable.addRow(row);
@@ -112,5 +147,13 @@ public class BoxTable {
 
     public Table.TableBuilder getTableBuilder() {
         return mTable;
+    }
+    
+    public float getTopPadding() {
+    	return this.mTopPadding;
+    }
+    
+    public float getBottomPadding() {
+    	return this.mBottomPadding;
     }
 }

@@ -20,7 +20,7 @@ public class Table {
 
     private static final PDFont DEFAULT_FONT = PDType1Font.HELVETICA;
     private static final int DEFAULT_FONT_SIZE = 12;
-    private static final HorizontalAlignment DEFAULT_HORIZONTAL_ALIGNMENT = HorizontalAlignment.LEFT;
+    private static final HorizontalAlignment DEFAULT_HORIZONTAL_ALIGNMENT = HorizontalAlignment.CENTER;
     private static final VerticalAlignment DEFAULT_VERTICAL_ALIGNMENT = VerticalAlignment.MIDDLE;
 
     private final List<Row> rows;
@@ -70,6 +70,7 @@ public class Table {
         private Settings settings = Settings.builder()
                                                 .font(DEFAULT_FONT)
                                                 .fontSize(DEFAULT_FONT_SIZE)
+                                                .horizontalAlignment(DEFAULT_HORIZONTAL_ALIGNMENT)
                                                 .build();
 
         private TableBuilder() {
