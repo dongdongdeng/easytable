@@ -39,6 +39,8 @@ public class BoxTable {
     
     private int mNumColumns = 0;
     
+    private float mWidth = 800f;
+    
     private PDFont mDefaultFont = null;
 
     private List<BoxCell> mCellList = new ArrayList<>();
@@ -55,25 +57,29 @@ public class BoxTable {
         return font;
     }
 
-    public BoxTable(int numColumns, PDFont pdFont) {
+    public BoxTable(int numColumns, float width, PDFont pdFont) {
         
         mNumColumns = numColumns;
+        
+        mWidth = width;
         
         mDefaultFont = pdFont;
 
         mTable = Table.builder();
 
         for(int i=0; i<mNumColumns; i++) {
-            mTable.addColumnOfWidth(150);
+            mTable.addColumnOfWidth(width / mNumColumns);
         }
 
         mTable.fontSize(8).font(mDefaultFont).borderColor(Color.LIGHT_GRAY);
 
     }
 
-    public BoxTable(int numColumns, PDFont pdFont, float topPadding, float bottomPadding) {
+    public BoxTable(int numColumns, float width, PDFont pdFont, float topPadding, float bottomPadding) {
         
     	mNumColumns = numColumns;
+    	
+    	mWidth = width;
         
         mDefaultFont = pdFont;
         
@@ -84,7 +90,7 @@ public class BoxTable {
         mTable = Table.builder();
 
         for(int i=0; i<mNumColumns; i++) {
-            mTable.addColumnOfWidth(150);
+            mTable.addColumnOfWidth(width / mNumColumns);
         }
 
         mTable.fontSize(8).font(mDefaultFont).borderColor(Color.LIGHT_GRAY);    	
@@ -155,5 +161,9 @@ public class BoxTable {
     
     public float getBottomPadding() {
     	return this.mBottomPadding;
+    }
+    
+    public float getWidth() {
+    	return this.mWidth;
     }
 }

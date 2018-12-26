@@ -26,6 +26,8 @@ public class BoxDocument {
 
     private PDFont mDefaultFont = null;
     
+    private Color mDefaultColor = Color.BLACK;
+    
     private List<BoxTable> mTableList = new ArrayList<>();
 
     private List<Object> mObjectList = new ArrayList<>();
@@ -173,6 +175,8 @@ public class BoxDocument {
                 	contentStream.setFont(paragraph.getFont(), paragraph.getFontSize());
                     //Begin the Content stream
                     contentStream.beginText();
+                    
+                    contentStream.setNonStrokingColor(paragraph.getColor());
 
                     //Setting the position for the line
                     contentStream.newLineAtOffset(startX, lastY);
@@ -205,14 +209,13 @@ public class BoxDocument {
                 		
                 		lastY = lastY - 1.5f * this.DEFAULT_FONT_SIZE * line;
                 	} else {
-                	
 	                    contentStream.setFont(this.mDefaultFont, DEFAULT_FONT_SIZE);
+	                    
+	                    contentStream.setNonStrokingColor(this.mDefaultColor);
+	                    
 	                    //Begin the Content stream
 	                    contentStream.beginText();
-	                    
-	                    contentStream.setNonStrokingColor(Color.BLUE);
-	
-	                    //Setting the position for the line
+	                                        //Setting the position for the line
 	                    contentStream.newLineAtOffset(DOCUMENT_PADDING, lastY);
 	
 	                    //Adding text in the form of string
