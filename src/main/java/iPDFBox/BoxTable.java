@@ -42,6 +42,8 @@ public class BoxTable {
     private float mWidth = 800f;
     
     private PDFont mDefaultFont = null;
+    
+    private boolean bRowJustNeedBottomBorder = false;
 
     private List<BoxCell> mCellList = new ArrayList<>();
 
@@ -116,6 +118,10 @@ public class BoxTable {
             }
         }
     }
+    
+    public void setRowJustNeedBottom(boolean bNeed) {
+    	this.bRowJustNeedBottomBorder = bNeed;
+    }
 
     public void flush( ) throws Exception {
         Color BLUE_DARK = new Color(76, 129, 190);
@@ -131,10 +137,20 @@ public class BoxTable {
                     } else {
                     	BoxCell cell = mCellList.get(i - j);
                     	if (null != cell.getParagraph()) {
-                    		rowBuilder.add(CellParagraph.builder().paragraph(cell.getParagraph()).span(cell.getColspan()).borderWidthBottom(1).horizontalAlignment(cell.getHorizontalAlignment()).build());
+                    		if (this.bRowJustNeedBottomBorder) {
+                    			rowBuilder.add(CellParagraph.builder().paragraph(cell.getParagraph()).span(cell.getColspan()).borderWidthBottom(1).horizontalAlignment(cell.getHorizontalAlignment()).build());
+                    		} else {
+                    			rowBuilder.add(CellParagraph.builder().paragraph(cell.getParagraph()).span(cell.getColspan()).borderWidth(1).horizontalAlignment(cell.getHorizontalAlignment()).build());
+                    		}
                     	} else {
-                    		rowBuilder.add(CellText.builder().text(mCellList.get(i - j).getText()).span(mCellList.get(i - j).getColspan()).borderWidthBottom(1).build());
+                    		if (this.bRowJustNeedBottomBorder) {
+                    			rowBuilder.add(CellText.builder().text(mCellList.get(i - j).getText()).span(mCellList.get(i - j).getColspan()).borderWidthBottom(1).build());
+                    		} else {
+                    			rowBuilder.add(CellText.builder().text(mCellList.get(i - j).getText()).span(mCellList.get(i - j).getColspan()).borderWidth(1).build());
+                    		}
                     	}
+                    	
+                    	
                     }
 
                 }
