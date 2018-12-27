@@ -1,81 +1,91 @@
-# easytable
+# Fork from easytable
 
-This is a (very) small project that builds upon
-[Apache's PDFBox](http://pdfbox.apache.org) (>= 2.0.0) and should allow you
-to create tables in a fairly simple way.
-It emerged from the need in another project. Therefore it also may miss some
-crucial features. Nevertheless there is:
-* setting font and font size on table level as well as cell level
-* setting single cells with bottom-, top-, left- and right-border width separately
-* background color on row or cell level
-* padding (top, bottom, left, right) on cell level
-* border colors (on table, row or cell level)
-* support for text alignment (right, left or center)
-* vertical text alignment
-* row spanning
-* line breaking and line spacing
-* images in cells
+This is a (very) small project that builds upon easytable, but borrow some API fashion from iText.
 
 ## Example
 
-In order to produce a whole PDF document with a table that looks like this one:
+        final PDFont FONT = BoxDocument.loadFontFromResource("simfang.ttf");
+    	
+        BoxDocument boxDocument = new BoxDocument(FONT);
+        
+        boxDocument.add(new BoxParagraph("万 岁 人 寿 保 险 股 份 有 限 公 司", HorizontalAlignment.CENTER, FONT, 12, Color.BLUE));
 
-![easytable table](doc/example.png)
+        boxDocument.add(new BoxParagraph("理 赔 拒 赔 通 知 书", HorizontalAlignment.CENTER, FONT, 12, Color.BLUE));
 
-You will need [this code](src/test/java/org/vandeseer/integrationtest/ExcelLikeExampleTest.java).
+        boxDocument.add(" ");
+        boxDocument.add(" ");
+        boxDocument.add(" ");
+        
+        boxDocument.add("尊敬的张三 先生/女士：");
 
-There are more examples (just see the folder), for instance this one: 
+        boxDocument.add("您好！感谢您对我公司的支持与信任。");
 
-![easytable table](doc/example2.png)
+        boxDocument.add("您本次提交的关于被保人张三于2018-12-24所发生事故的索赔资料，经本公司认真审核，现已理赔结案，给付详情如下所示：");
 
-Again, just have a look at the [code](src/test/java/org/vandeseer/integrationtest/SettingsTest.java).
+        boxDocument.add("赔案号：1234567890");
 
-If you run the tests with `mvn clean test` there also some PDF documents created which you can find in the `target` folder.
-The corresponding sources (in order to understand how to use the code) can be found in the test package.
+        BoxTable boxTable = new BoxTable(7, 480, FONT);
+        
+        boxTable.addCell("保单号");
+        boxTable.addCell("给付险种");
+        boxTable.addCell("合同处理结论");
+        boxTable.addCell("给付金额(元)");
+        boxTable.addCell("红利(元)");
+        boxTable.addCell("生存金(元)");
+        boxTable.addCell("退还保费(元)");
 
-## Installation
+        boxTable.addCell("860000001");
+        boxTable.addCell("太子太保");
+        boxTable.addCell("同意赔付");
+        boxTable.addCell("￥1000.00");
+        boxTable.addCell("￥100");
+        boxTable.addCell("￥20");
+        boxTable.addCell("￥300");
 
-First check it out and install it locally:
+        BoxCell boxCell = new BoxCell("合计");
+        boxCell.setColspan(3);
+        boxTable.addCell(boxCell);
 
-    git clone https://github.com/vandeseer/easytable.git
-    cd easytable
-    git checkout v0.2.0
-    mvn clean install
+        boxTable.addCell("0");
+        boxTable.addCell("0");
+        boxTable.addCell("0");
+        boxTable.addCell("0");
 
-Define this in your `pom.xml` in order to use it:
+        boxTable.flush();
+        
+        boxDocument.add(boxTable);
 
-    <dependency>
-        <groupId>org.vandeseer.pdfbox</groupId>
-        <artifactId>easytable</artifactId>
-        <version>0.2.0</version>
-    </dependency>
+        boxDocument.add("领取人信息");
 
-At one point it will hopefully also be available at maven central. 
+        BoxTable boxTable2 = new BoxTable(6, 480, FONT);
+        boxTable2.addCell("领款人");
+        boxTable2.addCell("与被保险人关系");
+        boxTable2.addCell("收益金额（元）");
+        boxTable2.addCell("支付方式");
+        boxTable2.addCell("银行帐号");
+        boxTable2.addCell("银行账户名");
+        
+        boxTable2.addCell("李四");
+        boxTable2.addCell("情敌");
+        boxTable2.addCell("￥1000");
+        boxTable2.addCell("银行转帐");
+        boxTable2.addCell("12121212121212");
+        boxTable2.addCell("李四");
+        
+        boxTable2.flush();
 
-## Kudos
+        boxDocument.add(boxTable2);
 
-- to [Binghammer](https://github.com/Binghammer) for implementing cell coloring and text center alignment
-- to [Sebastian Göhring](https://github.com/TheSilentHorizon) for finding and fixing a bug (column spanning)
-- to [AndreKoepke](https://github.com/AndreKoepke) for the line breaking feature, some bigger nice refactorings and 
-improvements
-- to [Wolfgang Apolinarski](https://github.com/wapolinar) for the printing over pages and bugfixes
+        boxDocument.add("若您有任何疑问，请与当地客户服务部联系，或致电全国客户服务热线400-XXXXXXXX垂询。");
+
+        boxDocument.add("谨祝 安康！");
+        
+        boxDocument.add(new BoxParagraph("万岁人寿保险股份有限公司（青岛分公司）", HorizontalAlignment.RIGHT, FONT, 10));
+        
+        boxDocument.add(new BoxParagraph("(盖章)", HorizontalAlignment.RIGHT, FONT, 10));
+        
+        boxDocument.add(new BoxParagraph("2050-12-27 10:52", HorizontalAlignment.RIGHT, FONT, 10));
+
+        boxDocument.save(OUTPUT_FILE_NAME);
 
 ## Q&A
-
-### Does it work with Java < 8?
-
-Nope. You will need Java 8.
-
-### Does it work with PDFBox 1.8.9?
-
-Well, Using it with PDFBox 1.8.9 requires you to check out version
-0.0.7 (tagged as such in git) and install it locally, i.e.:
-
-    git checkout v0.0.7
-    mvn clean install
-
-Note though that the API will have changed in the meantime ...
-
-### Cool, I like it, can I buy you a beer?
-
-Yes. Or you can upvote this answer on [stackoverflow](https://stackoverflow.com/questions/28059563/how-to-create-table-using-apache-pdfbox/42612456#42612456).
