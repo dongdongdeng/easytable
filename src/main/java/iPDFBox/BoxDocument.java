@@ -14,6 +14,7 @@ import org.vandeseer.easytable.util.PdfUtil;
 import java.awt.Color;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -41,6 +42,10 @@ public class BoxDocument {
             throw new RuntimeException("IO exception");
         }
     }
+    
+    public BoxDocument(PDFont font) {
+    	this.mDefaultFont = font;
+    }
 
     public void add(String text) {
         mObjectList.add(text);
@@ -64,6 +69,16 @@ public class BoxDocument {
             throw new RuntimeException("IO exception");
         }
         return font;
+    }
+    
+    public static PDFont loadFontFromResource(String fontName) {
+    	try {
+    	PDDocument documentMock = new PDDocument();
+    	InputStream inFont = BoxDocument.class.getClassLoader().getResourceAsStream(fontName);
+        return PDType0Font.load(documentMock, inFont);
+    	} catch(IOException e) {
+    		throw new RuntimeException("IO exception");
+    	}
     }
     
     /**
