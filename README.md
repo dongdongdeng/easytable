@@ -7,6 +7,8 @@ In order to produce a whole PDF document with a table that looks like this one:
 
 ![easytable table](doc/Demo2.png)
 
+You just need [this code](src/test/java/org/vandeseer/integrationtest/DenyClaimNotice.java). :
+
         final PDFont FONT = BoxDocument.loadFontFromResource("simfang.ttf");
     	
         BoxDocument boxDocument = new BoxDocument(FONT);
