@@ -5,7 +5,7 @@ This is a (very) small project that builds upon easytable, but borrow some API f
 ## Example
 In order to produce a whole PDF document with a table that looks like this one:
 
-![easytable table](doc/demo2.png)
+![easytable table](doc/Demo2.png)
 
         final PDFont FONT = BoxDocument.loadFontFromResource("simfang.ttf");
     	
