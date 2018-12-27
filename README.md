@@ -4,7 +4,7 @@ This is a (very) small project that builds upon easytable, but borrow some API f
 
 ## Example
 
-final PDFont FONT = BoxDocument.loadFontFromResource("simfang.ttf");
+        final PDFont FONT = BoxDocument.loadFontFromResource("simfang.ttf");
     	
         BoxDocument boxDocument = new BoxDocument(FONT);
         
